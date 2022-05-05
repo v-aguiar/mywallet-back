@@ -1,12 +1,12 @@
 ﻿import Joi from "joi";
 
-// Joi validation schemas
 export const user_schema = new Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
   password: Joi.string().required(),
   confirm: Joi.string().valid(Joi.ref("password")),
 });
+
 export const transaction_schema = new Joi.object({
   type: Joi.string().valid("income", "expense").required(),
   amount: Joi.string().required(),

@@ -7,8 +7,11 @@ import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import chalk from "chalk";
 
+import { v4 as uuidv4 } from "uuid";
 import { stripHtml } from "string-strip-html";
-import { user_schema, transaction_schema } from "./schemas/schemas.js";
+import { user_schema, transaction_schema } from "./models/schemas.js";
+
+import db from "./db/db.js";
 
 dotenv.config();
 
@@ -17,10 +20,6 @@ app.use(json());
 app.use(cors());
 
 app.post("/sign-up", async (req, res) => {
-  const mongoClient = new MongoClient(
-    process.env.MONGODB_URL || "mongodb://27017"
-  );
-
   const { name, email } = req.body;
   const { password, confirm } = req.headers;
 
@@ -38,9 +37,6 @@ app.post("/sign-up", async (req, res) => {
   }
 
   try {
-    await mongoClient.connect();
-    const db = mongoClient.db("mywallet-api");
-
     const user = {
       name,
       email,
@@ -52,51 +48,96 @@ app.post("/sign-up", async (req, res) => {
     if (registeredUser) {
       console.error("⚠ E-mail already registered!");
       res.sendStatus(403);
-      mongoClient.close();
       return;
     }
 
-    const mongoUser = await db.collection("users").insertOne(user);
+    await db.collection("users").insertOne(user);
 
     res.sendStatus(201);
-    mongoClient.close();
   } catch (e) {
     console.error(e);
     res.sendStatus(422);
-    mongoClient.close();
   }
 });
 
 app.post("/sign-in", async (req, res) => {
-  const mongoClient = new MongoClient(
-    process.env.MONGODB_URL || "mongodb://27017"
-  );
   const { email } = req.body;
   const { password } = req.headers;
 
   try {
-    await mongoClient.connect();
-    const db = mongoClient.db("mywallet-api");
-
     const registeredUser = await db.collection("users").findOne({ email });
 
     if (
       registeredUser &&
       bcrypt.compareSync(password, registeredUser.password)
     ) {
-      res.status(200).send({ token: registeredUser._id });
-      mongoClient.close();
+      const token = uuidv4();
+
+      await db
+        .collection("sessions")
+        .insertOne({ token, userId: registeredUser._id });
+
+      res.status(200).send({ token });
       return;
     } else {
       console.error("⚠ Email or password is incorrect!");
       res.sendStatus(403);
-      mongoClient.close();
       return;
     }
   } catch (e) {
     console.error(e);
     res.sendStatus(422);
-    mongoClient.close();
+  }
+});
+
+app.post("/transactions", async (req, res) => {
+  const { amount, description, type } = req.body;
+  const { token } = req.headers;
+
+  // validate inputs with joi schema
+  const validateTransaction = transaction_schema.validate(
+    { amount, description, type },
+    { abortEarly: false }
+  );
+  if (validateTransaction.error) {
+    console.error(validateTransaction.error.message);
+    res.status(422).send("⚠  Invalid data!");
+    return;
+  }
+
+  try {
+    // validate if given token matches any previously registered user._id
+    const user = db.collection("users").findOne({ _id: new ObjectId(token) });
+    if (!user) {
+      console.error("Token invalid!");
+      res.sendStatus(401);
+    }
+
+    const transaction = {
+      type,
+      amount,
+      description,
+      name: user.name,
+      userId: token,
+      timestamp: Date.now(),
+      date: dayjs().format("DD/MM"),
+    };
+
+    await db.collection("transactions").insertOne(transaction);
+  } catch (e) {
+    console.error("\n⚠ Couldn't reach transactions!\n", e);
+    res.send(422);
+  }
+});
+
+app.get("/transactions", async (req, res) => {
+  const { token } = req.headers;
+
+  try {
+    db.collection("transactions").find({}).filter({});
+  } catch (e) {
+    console.error("\n⚠ Couldn't reach transactions!\n", e);
+    res.send(422);
   }
 });
 
