@@ -1,12 +1,12 @@
-﻿import { ObjectId } from "mongodb";
-import dayjs from "dayjs";
+﻿import dayjs from "dayjs";
 
 import { transaction_schema } from "../models/schemas.js";
 import db from "../db/db.js";
 
 export async function addTransaction(req, res) {
   const { amount, description, type } = req.body;
-  const { token } = req.headers;
+  const { authorization } = req.headers;
+  const token = authorization.replace("Bearer ", "");
 
   // validate inputs with joi schema
   const validateTransaction = transaction_schema.validate(
@@ -21,39 +21,60 @@ export async function addTransaction(req, res) {
   }
 
   try {
-    // TODO validate if given token matches any previously registered user._id
-    const user = db.collection("users").findOne({ _id: new ObjectId(token) });
+    const userSession = await db.collection("sessions").findOne({ token });
+
+    const { userId } = userSession;
+
+    const user = await db.collection("users").findOne({ _id: userId });
     if (!user) {
-      console.error("Token invalid!");
+      console.error("User not found!");
       res.sendStatus(401);
     }
 
     const transaction = {
       type,
       amount,
+      userId,
       description,
       name: user.name,
-      userId: token,
       timestamp: Date.now(),
       date: dayjs().format("DD/MM"),
     };
 
+    console.log(transaction);
+
     await db.collection("transactions").insertOne(transaction);
+    res.sendStatus(201);
   } catch (e) {
     console.error("\n⚠ Couldn't add transaction!\n", e);
-    res.send(422);
+    res.sendStatus(422);
   }
 }
 
 export async function getTransactions(req, res) {
-  const { token } = req.headers;
-
-  //TODO get transactions if token is valid
+  const { authorization } = req.headers;
+  const token = authorization.replace("Bearer ", "");
 
   try {
-    db.collection("transactions").find({}).filter({});
+    const userSession = await db.collection("sessions").findOne({ token });
+    const { userId } = userSession;
+
+    // Filter transactions cronologically
+    const filteredTransactions = await db
+      .collection("transactions")
+      .find({ userId })
+      .sort({ timestamp: -1 })
+      .toArray();
+
+    // Remove _id and userId from response
+    filteredTransactions.forEach((transaction) => {
+      delete transaction._id;
+      delete transaction.userId;
+    });
+
+    res.status(200).send(filteredTransactions);
   } catch (e) {
     console.error("\n⚠ Couldn't reach transactions!\n", e);
-    res.send(422);
+    res.sendStatus(422);
   }
 }

@@ -1,27 +1,12 @@
 ﻿import { v4 as uuidv4 } from "uuid";
-import { stripHtml } from "string-strip-html";
 
 import bcrypt from "bcrypt";
 
-import { user_schema } from "../models/schemas.js";
 import db from "../db/db.js";
 
 export async function signUp(req, res) {
   const { name, email } = req.body;
-  const { password, confirm } = req.headers;
-
-  // Validate inputs
-  const validateInput = user_schema.validate({
-    name: stripHtml(name).result,
-    email,
-    password,
-    confirm,
-  });
-  if (validateInput.error) {
-    console.error(validateInput.error.message);
-    res.sendStatus(422);
-    return;
-  }
+  const { password } = req.headers;
 
   try {
     const user = {
@@ -49,6 +34,7 @@ export async function signUp(req, res) {
 
 export async function signIn(req, res) {
   const { password } = req.headers;
+  const { email } = req.body;
 
   try {
     const registeredUser = await db.collection("users").findOne({ email });

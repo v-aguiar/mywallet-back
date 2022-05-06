@@ -4,11 +4,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import chalk from "chalk";
 
-import { signUp, signIn } from "./controllers/authController.js";
-import {
-  addTransaction,
-  getTransactions,
-} from "./controllers/transactionController.js";
+import router from "./routes/router.js";
+
+import db from "./db/db.js";
 
 dotenv.config();
 
@@ -16,13 +14,21 @@ const app = express();
 app.use(json());
 app.use(cors());
 
-// Authentication routes
-app.post("/sign-up", signUp);
-app.post("/sign-in", signIn);
+app.use(router);
 
-// Transaction routes
-app.post("/transactions", addTransaction);
-app.get("/transactions", getTransactions);
+// ** ⚠ WARNING! ** Development/Testing purposes only. Use carefully! ** ⚠ WARNING! **
+app.delete("/delete-all", async (req, res) => {
+  try {
+    await db.collection("users").deleteMany({});
+    await db.collection("sessions").deleteMany({});
+    await db.collection("transactions").deleteMany({});
+
+    res.sendStatus(200);
+  } catch (e) {
+    console.error("⚠ Error deleting data!");
+    res.sendStatus(404);
+  }
+});
 
 app.listen(process.env.PORT || 5000, () => {
   console.log(
