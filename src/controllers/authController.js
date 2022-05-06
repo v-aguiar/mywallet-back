@@ -45,9 +45,11 @@ export async function signIn(req, res) {
     ) {
       const token = uuidv4();
 
-      await db
-        .collection("sessions")
-        .insertOne({ token, userId: registeredUser._id });
+      await db.collection("sessions").insertOne({
+        token,
+        userId: registeredUser._id,
+        timestamp: Date.now(),
+      });
 
       res.status(200).send({ token });
       return;
@@ -60,4 +62,12 @@ export async function signIn(req, res) {
     console.error(e);
     res.sendStatus(422);
   }
+}
+
+// TODO Handle token new validation from time to time
+export async function handleSession(req, res) {
+  const token = null;
+
+  // if -------> token is valid, renew token timestamp
+  // else -----> remove token from "session" db collection
 }

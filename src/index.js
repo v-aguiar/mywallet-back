@@ -30,10 +30,12 @@ app.delete("/delete-all", async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT || 5000, () => {
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
   console.log(
     chalk.bold.greenBright("\n🚀 Server is running!") +
-      chalk.bold.cyanBright("\n\nListening on port 5000...\n") +
-      chalk.bold.magenta("http://localhost:5000\n")
+      chalk.bold.cyanBright("\n\nListening on port " + PORT + "...\n") +
+      chalk.bold.magenta("http://localhost:" + PORT + "\n")
   );
 });
