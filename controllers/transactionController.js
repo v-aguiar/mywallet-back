@@ -5,12 +5,10 @@ import db from "../db/db.js";
 
 export async function addTransaction(req, res) {
   const { amount, description, type } = req.body;
-  const { authorization } = req.headers;
-  const token = authorization.replace("Bearer ", "");
 
   // validate inputs with joi schema
   const validateTransaction = transaction_schema.validate(
-    //type can only be "expense" or "income"
+    // type can only be "expense" or "income"
     { amount, description, type },
     { abortEarly: false }
   );
@@ -21,8 +19,7 @@ export async function addTransaction(req, res) {
   }
 
   try {
-    const userSession = await db.collection("sessions").findOne({ token });
-
+    const { userSession } = res.locals;
     const { userId } = userSession;
 
     const user = await db.collection("users").findOne({ _id: userId });
@@ -52,11 +49,8 @@ export async function addTransaction(req, res) {
 }
 
 export async function getTransactions(req, res) {
-  const { authorization } = req.headers;
-  const token = authorization.replace("Bearer ", "");
-
   try {
-    const userSession = await db.collection("sessions").findOne({ token });
+    const { userSession } = res.locals;
     const { userId } = userSession;
 
     // Filter transactions cronologically

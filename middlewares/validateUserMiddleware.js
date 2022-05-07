@@ -19,5 +19,6 @@ export async function validateUserInput(req, res, next) {
     return;
   }
 
+  res.locals.email = email;
   next();
 }

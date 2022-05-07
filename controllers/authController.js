@@ -33,9 +33,7 @@ export async function signUp(req, res) {
 }
 
 export async function signIn(req, res) {
-  const { password } = req.headers;
-  const { email } = req.body;
-
+  const { email } = res.locals;
   try {
     const registeredUser = await db.collection("users").findOne({ email });
 

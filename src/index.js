@@ -4,9 +4,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import chalk from "chalk";
 
-import router from "./routes/router.js";
-
-import db from "./db/db.js";
+import router from "../routes/router.js.js";
+import db from "../db/db.js";
 
 dotenv.config();
 
