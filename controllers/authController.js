@@ -33,10 +33,10 @@ export async function signUp(req, res) {
 }
 
 export async function signIn(req, res) {
-  const { email } = res.locals;
+  const { email } = req.body;
+  const { password } = req.headers;
   try {
     const registeredUser = await db.collection("users").findOne({ email });
-
     if (
       registeredUser &&
       bcrypt.compareSync(password, registeredUser.password)
