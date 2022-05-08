@@ -1,4 +1,5 @@
 ﻿import { Router } from "express";
+import cors from "cors";
 
 import {
   addTransaction,
@@ -8,7 +9,17 @@ import validateSession from "../middlewares/sessionMiddlewares.js";
 
 const transactionsRouter = Router();
 
-transactionsRouter.post("/transactions", validateSession, addTransaction);
-transactionsRouter.get("/transactions", validateSession, getTransactions);
+transactionsRouter.post(
+  "/transactions",
+  cors(),
+  validateSession,
+  addTransaction
+);
+transactionsRouter.get(
+  "/transactions",
+  cors(),
+  validateSession,
+  getTransactions
+);
 
 export default transactionsRouter;
