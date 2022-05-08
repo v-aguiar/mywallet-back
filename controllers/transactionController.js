@@ -53,6 +53,8 @@ export async function getTransactions(req, res) {
     const { userSession } = res.locals;
     const { userId } = userSession;
 
+    console.log(userSession);
+
     // Filter transactions cronologically
     const filteredTransactions = await db
       .collection("transactions")
@@ -60,13 +62,22 @@ export async function getTransactions(req, res) {
       .sort({ timestamp: -1 })
       .toArray();
 
-    // Remove _id and userId from response
-    filteredTransactions.forEach((transaction) => {
-      delete transaction._id;
-      delete transaction.userId;
-    });
+    // Returns transactions if the are any on the database
+    if (filteredTransactions.length > 0) {
+      // Remove _id and userId from response
+      filteredTransactions.forEach((transaction) => {
+        delete transaction._id;
+        delete transaction.userId;
+      });
+      res.status(200).send(filteredTransactions);
+      return;
+    }
 
-    res.status(200).send(filteredTransactions);
+    // When there are no transactions, return username;
+    const { name: username } = await db
+      .collection("users")
+      .findOne({ _id: userId });
+    res.send({ name: username });
   } catch (e) {
     console.error("\n⚠ Couldn't reach transactions!\n", e);
     res.sendStatus(422);
