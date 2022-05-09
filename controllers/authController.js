@@ -61,11 +61,3 @@ export async function signIn(req, res) {
     res.sendStatus(422);
   }
 }
-
-// TODO Handle token new validation from time to time
-export async function handleSession(req, res) {
-  const token = null;
-
-  // if -------> token is valid, renew token timestamp
-  // else -----> remove token from "session" db collection
-}
