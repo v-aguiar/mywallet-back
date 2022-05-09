@@ -1,6 +1,5 @@
 ﻿import express, { json } from "express";
 
-import cors from "cors";
 import dotenv from "dotenv";
 import chalk from "chalk";
 
@@ -11,18 +10,6 @@ dotenv.config();
 
 const app = express();
 app.use(json());
-
-app.options("*", cors());
-
-const corsOptions = {
-  origin: true,
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  preflightContinue: true,
-  optionsSuccessStatus: 204,
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
 
 app.use(router);
 

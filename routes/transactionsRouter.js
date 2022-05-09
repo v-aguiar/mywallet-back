@@ -9,6 +9,8 @@ import validateSession from "../middlewares/sessionMiddlewares.js";
 
 const transactionsRouter = Router();
 
+transactionsRouter.options("/transactions", cors());
+
 transactionsRouter.post(
   "/transactions",
   cors(),
