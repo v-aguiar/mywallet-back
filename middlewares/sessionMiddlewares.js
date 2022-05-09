@@ -14,7 +14,7 @@ export default async function validateSession(req, res, next) {
 
     res.locals.userSession = validateUserSession;
   } catch (error) {
-    console.error("\n⚠ Couldn't add transaction!\n", e);
+    console.error("\n⚠ Not authorized!\n", e);
     res.sendStatus(422);
   }
 

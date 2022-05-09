@@ -10,8 +10,10 @@ import db from "../db/db.js";
 dotenv.config();
 
 const app = express();
-app.use(cors());
 app.use(json());
+
+app.options("*", cors());
+app.use(cors());
 
 app.use(router);
 
