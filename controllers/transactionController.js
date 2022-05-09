@@ -8,7 +8,6 @@ export async function addTransaction(req, res) {
 
   // validate inputs with joi schema
   const validateTransaction = transaction_schema.validate(
-    // type can only be "expense" or "income"
     { amount, description, type },
     { abortEarly: false }
   );

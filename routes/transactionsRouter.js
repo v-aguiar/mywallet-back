@@ -9,7 +9,14 @@ import validateSession from "../middlewares/sessionMiddlewares.js";
 
 const transactionsRouter = Router();
 
-transactionsRouter.use(cors());
+const corsOptions = {
+  "Access-Control-Allow-Headers":
+    "Content-Type,Content-Length, Authorization, Accept,X-Requested-With",
+  "Access-Control-Allow-Methods": "PUT,POST,GET,DELETE,OPTIONS",
+  "Access-Control-Allow-Origin": "*",
+};
+
+transactionsRouter.use(cors(corsOptions));
 
 transactionsRouter.post("/transactions", validateSession, addTransaction);
 transactionsRouter.get("/transactions", validateSession, getTransactions);
