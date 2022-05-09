@@ -12,14 +12,16 @@ dotenv.config();
 const app = express();
 app.use(json());
 
+app.options("*", cors());
+
 const corsOptions = {
-  origin: "*",
+  origin: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  preflightContinue: false,
+  preflightContinue: true,
   optionsSuccessStatus: 204,
+  credentials: true,
 };
 
-app.options("*", cors());
 app.use(cors(corsOptions));
 
 app.use(router);
